@@ -5,68 +5,45 @@
 #include "Task.h"
 
 
-#pragma pack (push,1) // обязательно выключаем выравнивание элементов структур по умолчанию
-
-struct BitmapFileHeader
-{
-	char  bfType[2];  // сигнатура файла "BM"
-	unsigned long bfSize; // размер файла в байтах
-	unsigned short  bfReserved1;
-	unsigned short  bfReserved2;
-	unsigned long bfOffBits; // смещение относительно начала файла в байтах, где располагаются растровые данные
-};
-
-struct BitmapInfoHeader
-{
-	unsigned long biSize; // размер структуры BitmapInfoHeader == 40 байт
-	long biWidth;
-	long biHeight; // высота изображения в пикселах
-	unsigned short biPlanes; // число цветовых планов == 1
-	unsigned short biBitCount; // число бит на пиксель
-	unsigned long biCompression; // тип сжатия изображения
-	unsigned long biSizeImage; //размер растрового изображения в байтах
-	long biXPelsPerMeter;  // разрешение изображения по ширине
-	long biYPelsPerMeter;  // разрешение изображения по высоте
-	unsigned long biClrUsed; // число испольщуемых цветов изображения, если == 0, то используются все доступные цвета
-	unsigned long biClrImportant;  // число важных цветов изображения
-};
-
-#pragma pack(pop)
-
-#pragma pack(push,4)									// выравнивание на 4 байта, т.к. длина строки растрового изображения должна быть кратна 4 байтам
-
 int GetRasterRowLength(int width, int pix)
 {
-	if (width < 0) return -1;
+	if (width < 0) return -1;					// проверка на положжительную ширину изображения
 	int lenght;
 	switch (pix)
 	{
-	case 1:
-
+	case 1:										// действия если 1 бит на пиксель
+		lenght = width / 8 + (width % 8 != 0);
+		if (lenght % 4 != 0)					// длина строки растрового изображения должна быть кратна 4 байтам
+			lenght = lenght / 4 * 4 + 4;		// уравнять длину строки до кратности на 4 байта
 		return lenght;
 		break;
-	case 4:
-		
+	case 4:										// действия если 4 бит на пиксель
+		lenght = width / 2 + (width % 2 != 0);
+		if (lenght % 4 != 0)
+			lenght = lenght / 4 * 4 + 4;
 		return lenght;
 		break;
-	case 8:
-		
+	case 8:										// действия если 8 бит на пиксель
+		lenght = width;
+		if (lenght % 4 != 0)
+			lenght = lenght / 4 * 4 + 4;
 		return lenght;
 		break;
-	case 24:
-		
+	case 24:									// действия если 24 бит на пиксель
+		lenght = width*3;
+		if (lenght % 4 != 0)
+			lenght = lenght / 4 * 4 + 4;
 		return lenght;
 		break;
-	default:
+	default:									// если кол-во бит на пиксель не яв-ся стандартным
 		return -1;
 		break;
 	}
 }
 
-#pragma pack(pop)
 
 /*
-	Реализуйте функцию, которая рассчитывает длину строки в байтах растрового изображения Windows bitmap. 
+	Реализуйте функцию, которая рассчитывает длину строки в байтах растрового изображения Windows bitmap.
 	Как вы знаете, длина строки растрового изображения должна быть кратна 4 байтам и зависит от количества
 	бит для кодирования цвета пикселя и ширины изображения в пикселях.
 
